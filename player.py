@@ -1,4 +1,5 @@
 import sys
+import urllib.request
 from gi.repository import Gst
 
 class Player:
@@ -23,6 +24,11 @@ class Player:
         self.playbin.set_property('uri', uri)
         self.pipeline.add(self.playbin)
         self.pipeline.set_state(Gst.State.PLAYING)
+
+    def play_pls(self, uri):
+        req = urllib.request.urlopen(uri)
+        assert req.headers['Content-Type'].find('audio/x-scpls') == 0
+        print(req.read().decode('utf-8'))
 
     def stop(self):
         if self.playbin:

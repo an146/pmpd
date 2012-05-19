@@ -16,6 +16,7 @@ class PmpdDaemon(Daemon):
     def run(self):
         self.player = Player()
         self.player.play('http://u16b.di.fm:80/di_ambient')
+        #self.player.play_pls('http://listen.di.fm/public3/dubstep.pls')
         self.mainloop = GObject.MainLoop()
         self.mainloop.run()
         print("mainloop ended", file=sys.stderr)
