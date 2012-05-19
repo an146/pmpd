@@ -81,7 +81,10 @@ class Daemon:
         
         # Start the daemon
         self.daemonize()
-        self.run()
+        try:
+            self.run()
+        except Exception as exc:
+            print(exc, file=sys.stderr)
 
     def stop(self):
         """Stop the daemon."""
