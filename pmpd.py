@@ -1,6 +1,7 @@
 import sys, time
 from daemon import Daemon
 from player import Player
+from wave import Wave
 from gi.repository import GObject, Gtk
 
 GObject.threads_init()
@@ -13,17 +14,16 @@ class PmpdDaemon(Daemon):
     def __init__(self):
         super().__init__(pidfile = '/tmp/pmpd.pid', logfile = '/tmp/pmpd.log')
 
-    def run(self):
+    def run(self, wave):
         self.player = Player()
-        self.player.play('http://u16b.di.fm:80/di_ambient')
-        #self.player.play_pls('http://listen.di.fm/public3/dubstep.pls')
+        wave.play(self.player)
         self.mainloop = GObject.MainLoop()
         self.mainloop.run()
         print("mainloop ended", file=sys.stderr)
 
 if __name__ == "__main__":
     daemon = PmpdDaemon()
-    if len(sys.argv) == 2:
+    if len(sys.argv) >= 2:
         if 'start' == sys.argv[1]:
             daemon.start()
         elif 'stop' == sys.argv[1]:
@@ -31,8 +31,9 @@ if __name__ == "__main__":
         elif 'restart' == sys.argv[1]:
             daemon.restart()
         elif 'run' == sys.argv[1]:
-            daemon.run()
+            daemon.run(Wave(*sys.argv[2:]))
         else:
+            print(sys.argv[1])
             usage()
         sys.exit(0)
     else:
