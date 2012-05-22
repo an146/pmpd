@@ -1,5 +1,4 @@
 import sys
-import urllib.request
 from gi.repository import Gst
 
 class Player:
@@ -13,29 +12,7 @@ class Player:
         self.bus.connect('message', self.on_message)
         self.bus.add_signal_watch()
 
-    def play(self, uri):
-        if uri.endswith(".pls"):
-            self.play_pls(uri)
-        else:
-            self.play_stream(uri)
-
-    def play_pls(self, uri):
-        req = urllib.request.urlopen(uri)
-        assert req.headers['Content-Type'].find('audio/x-scpls') == 0
-        playlist = req.read().decode('utf-8')
-        print(playlist)
-        for l in playlist.splitlines():
-            if l[0:4] == "File":
-                break
-        else:
-            l = ""
-
-        if l == "":
-            raise RuntimeError("no streams in playlist")
-        else:
-            self.play_stream(l[l.find("=")+1:])
-
-    def play_stream(self, uri):
+    def play_uri(self, uri):
         self.stop()
         print("playing", uri, file=sys.stderr)
         self.playbin = Gst.ElementFactory.make("playbin", None)

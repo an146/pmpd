@@ -1,7 +1,7 @@
 import sys, time
+import wave
 from daemon import Daemon
 from player import Player
-from wave import Wave
 from gi.repository import GObject, Gtk
 
 GObject.threads_init()
@@ -31,7 +31,7 @@ if __name__ == "__main__":
         elif 'restart' == sys.argv[1]:
             daemon.restart()
         elif 'run' == sys.argv[1]:
-            daemon.run(Wave(*sys.argv[2:]))
+            daemon.run(wave.create(*sys.argv[2:]))
         else:
             print(sys.argv[1])
             usage()
