@@ -33,40 +33,25 @@ class PlaylistWave(Wave):
             player.play_uri(l[l.find("=")+1:])
 
 
-def read_waves_file(name, path):
-    global aliases
-    for line in open(path, 'r').readlines():
-        line = line.strip()
-        if line == "" or line.startswith('#'):
-            continue
-
-        m = re.match(r"(\w+): (.*)", line)
-        if m == None:
-            print("invalid wave desc:", line, file=sys.stderr)
-        else:
-            aliases[name + '/' + m.group(1)] = m.group(2)
-            if m.group(1) == 'default':
-                aliases[name] = m.group(2)
-def read_waves():
-    global aliases
-    aliases = {}
-    for dirname, dirnames, filenames in os.walk('waves/'):
-        for filename in filenames:
-            read_waves_file(filename, os.path.join(dirname, filename))
-read_waves()
-
-
-def create(desc = None, alias_depth = 10):
+def create(desc = None, alias_depth = 3):
     if desc == None:
         return Wave()
-    elif re.match('^[a-z]{1,4}://', desc) != None:
+    desc = desc.strip()
+    if re.match('^[a-z]{1,4}://', desc) != None:
         return create_from_uri(desc)
-    elif desc in aliases:
-        if alias_depth <= 0:
-            raise RuntimeError("too deep alias recursion: " + desc)
-        return create(aliases[desc], alias_depth - 1)
-    else:
+
+    # check aliases
+    desc1 = expand_alias(desc)
+    if desc1 == None:
         raise RuntimeError("file not found: " + desc)
+    if alias_depth <= 0:
+        raise RuntimeError("too deep alias recursion: " + desc)
+    return create(desc1, alias_depth - 1)
+
+def expand_alias(alias):
+    try: return open('waves/' + alias).read().strip()
+    except(IOError): pass
+    return None
 
 def create_from_uri(uri):
     if uri.endswith(".pls"):
