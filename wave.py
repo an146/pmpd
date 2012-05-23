@@ -49,7 +49,11 @@ def create(desc = None, alias_depth = 3):
     return create(desc1, alias_depth - 1)
 
 def expand_alias(alias):
-    try: return open('waves/' + alias).read().strip()
+    try:
+        for l in open('waves/' + alias).readlines():
+            l = l.strip()
+            if not l.startswith('#'):
+                return l
     except(IOError): pass
     return None
 
