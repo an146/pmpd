@@ -1,6 +1,7 @@
 import os, re
 import sys
 import urllib.request
+from config import config
 
 class Wave:
     def play(self, player):
@@ -50,7 +51,7 @@ def create(desc = None, alias_depth = 3):
 
 def expand_alias(alias):
     try:
-        for l in open('waves/' + alias).readlines():
+        for l in open(os.path.join(config.wavesdir, alias)).readlines():
             l = l.strip()
             if not l.startswith('#'):
                 return l
@@ -62,3 +63,10 @@ def create_from_uri(uri):
         return PlaylistWave(uri)
     else:
         return StreamWave(uri)
+
+def check_wavesdir():
+    if not os.path.isdir(config.wavesdir):
+        os.mkdir(config.wavesdir)
+        open(os.path.join(config.wavesdir, 'rad'), 'w').write(
+            "http://195.151.189.25/RAD.mp3")
+        print("created", config.wavesdir, file=sys.stderr)

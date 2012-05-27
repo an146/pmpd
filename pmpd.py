@@ -1,8 +1,9 @@
-import sys, time
-import wave
+import getopt, sys
+from gi.repository import GObject, Gtk
+from config import config
 from daemon import Daemon
 from player import Player
-from gi.repository import GObject, Gtk
+import wave
 
 GObject.threads_init()
 
@@ -10,9 +11,9 @@ def usage():
     print("usage: {0} start|stop|restart".format(sys.argv[0]))
     sys.exit(2)
 
-class PmpdDaemon(Daemon):
+class Pmpd(Daemon):
     def __init__(self):
-        super().__init__(pidfile = '/tmp/pmpd.pid', logfile = '/tmp/pmpd.log')
+        super().__init__(pidfile = config.pidfile, logfile = config.logfile)
 
     def run(self, wave):
         self.player = Player()
@@ -21,11 +22,19 @@ class PmpdDaemon(Daemon):
         self.mainloop.run()
         print("mainloop ended", file=sys.stderr)
 
-if __name__ == "__main__":
-    daemon = PmpdDaemon()
+def main():
+    configfile = None
+    opts, args = getopt.getopt(sys.argv[1:], 'C:')
+    for opt, val in opts:
+        if opt == 'C':
+            configfile = val
+    config.read(configfile)
+    wave.check_wavesdir()
+
+    daemon = Pmpd()
     if len(sys.argv) == 1:
         daemon.run(wave.create())
-    if len(sys.argv) >= 2:
+    else:
         if 'start' == sys.argv[1]:
             daemon.start()
         elif 'stop' == sys.argv[1]:
@@ -38,5 +47,6 @@ if __name__ == "__main__":
             print(sys.argv[1])
             usage()
         sys.exit(0)
-    else:
-        usage()
+
+if __name__ == "__main__":
+    main()
