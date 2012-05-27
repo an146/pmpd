@@ -13,11 +13,12 @@ def usage():
 
 class Pmpd(Daemon):
     def __init__(self):
+        self.wave = wave.create()
         super().__init__(pidfile = config.pidfile, logfile = config.logfile)
 
-    def run(self, wave):
+    def run(self):
         self.player = Player()
-        wave.play(self.player)
+        self.wave.play(self.player)
         self.mainloop = GObject.MainLoop()
         self.mainloop.run()
         print("mainloop ended", file=sys.stderr)
@@ -33,7 +34,7 @@ def main():
 
     daemon = Pmpd()
     if len(sys.argv) == 1:
-        daemon.run(wave.create())
+        daemon.run()
     else:
         if 'start' == sys.argv[1]:
             daemon.start()
@@ -42,7 +43,8 @@ def main():
         elif 'restart' == sys.argv[1]:
             daemon.restart()
         elif 'run' == sys.argv[1]:
-            daemon.run(wave.create(*sys.argv[2:]))
+            daemon.wave = wave.create(*sys.argv[2:])
+            daemon.run()
         else:
             print(sys.argv[1])
             usage()
