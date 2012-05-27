@@ -1,4 +1,5 @@
 import sys
+import logging as log
 from gi.repository import Gst
 
 class Player:
@@ -14,7 +15,7 @@ class Player:
 
     def play_uri(self, uri):
         self.stop()
-        print("playing", uri, file=sys.stderr)
+        log.info("playing %s", uri)
         self.playbin = Gst.ElementFactory.make("playbin", None)
         self.playbin.set_property('uri', uri)
         self.pipeline.add(self.playbin)
@@ -29,17 +30,21 @@ class Player:
     def on_message(self, bus, msg):
         t = msg.type.first_value_nick
         if t == 'error':
-            print('error:', msg.parse_error(), file=sys.stderr)
+            log.info('error: %s', msg.parse_error())
         elif t == 'stream_status':
-            print('stream_status:', msg.parse_stream_status(), file=sys.stderr)
+            status, src = msg.parse_stream_status()
+            log.info('stream_status: %16s %s', src.name, status.value_nick)
         elif t == 'state_changed':
             st = list(map(lambda x: x.value_nick, msg.parse_state_changed()))
-            print('state_changed:', msg.src, st, file=sys.stderr)
+            if msg.src == self.pipeline:
+                log.info('pipeline_state_changed: %s', st)
+            else:
+                log.debug('state_changed: %16s %s', msg.src.name, st)
         elif t == 'element':
-            print('element:', msg.get_structure(), file=sys.stderr)
+            log.info('element: %16s <%s>', msg.src.name, msg.get_structure().get_name())
         elif t == 'tag':
-            print('tag:', msg.parse_tag().to_string(), file=sys.stderr)
+            log.info('tag: %s', msg.parse_tag().to_string())
         elif t == 'buffering':
-            print('buffering:', msg.parse_buffering(), file=sys.stderr)
+            log.debug('buffering: %s', msg.parse_buffering())
         else:
-            print('message:', t, file=sys.stderr)
+            log.info('message: %s', t)

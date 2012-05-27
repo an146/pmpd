@@ -1,3 +1,4 @@
+import logging as log
 import os, re
 import sys
 import urllib.request
@@ -19,7 +20,7 @@ class PlaylistWave(Wave):
         req = urllib.request.urlopen(uri)
         assert req.headers['Content-Type'].find('audio/x-scpls') == 0
         self.playlist = req.read().decode('utf-8')
-        print(self.playlist)
+        log.debug("Got playlist:\n" + self.playlist)
 
     def play(self, player):
         for l in self.playlist.splitlines():
@@ -69,4 +70,4 @@ def check_wavesdir():
         os.mkdir(config.wavesdir)
         open(os.path.join(config.wavesdir, 'rad'), 'w').write(
             "http://195.151.189.25/RAD.mp3")
-        print("created", config.wavesdir, file=sys.stderr)
+        log.info("created", config.wavesdir)

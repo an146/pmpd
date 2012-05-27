@@ -7,9 +7,8 @@ class Daemon:
 
     Usage: subclass the daemon class and override the run() method."""
 
-    def __init__(self, pidfile, logfile):
+    def __init__(self, pidfile):
         self.pidfile = pidfile
-        self.logfile = logfile
     
     def daemonize(self):
         """Deamonize class. UNIX double fork mechanism."""
@@ -39,16 +38,7 @@ class Daemon:
             sys.stderr.write('fork #2 failed: {0}\n'.format(err))
             sys.exit(1) 
     
-        # redirect standard file descriptors
-        sys.stdout.flush()
-        sys.stderr.flush()
-        si = open(os.devnull, 'r')
-        so = open(os.devnull, 'a+')
-        se = open(self.logfile, 'w')
-
-        os.dup2(si.fileno(), sys.stdin.fileno())
-        os.dup2(so.fileno(), sys.stdout.fileno())
-        os.dup2(se.fileno(), sys.stderr.fileno())
+        #self.close_stdfiles()
     
         # write pidfile
         atexit.register(self.delpid)
@@ -61,6 +51,18 @@ class Daemon:
     
     def delpid(self):
         os.remove(self.pidfile)
+
+    @classmethod
+    def close_stdfiles(cls):
+        sys.stdout.flush()
+        sys.stderr.flush()
+        si = open(os.devnull, 'r')
+        so = open(os.devnull, 'a+')
+        se = open(os.devnull, 'w')
+
+        os.dup2(si.fileno(), sys.stdin.fileno())
+        os.dup2(so.fileno(), sys.stdout.fileno())
+        os.dup2(se.fileno(), sys.stderr.fileno())
 
     def start(self):
         """Start the daemon."""
@@ -82,7 +84,7 @@ class Daemon:
         # Start the daemon
         self.daemonize()
         try:
-            self.run()
+            self.run(background=True)
         except Exception as exc:
             print(exc, file=sys.stderr)
 
@@ -120,6 +122,10 @@ class Daemon:
         """Restart the daemon."""
         self.stop()
         self.start()
+
+    def run_in_foreground(self):
+        #self.close_stdfiles()
+        self.run(background=False)
 
     def run(self):
         """You should override this method when you subclass Daemon.

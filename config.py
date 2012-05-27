@@ -25,13 +25,17 @@ class config():
         cls.wavesdir = conf.get('pmpd', 'wavesdir')
         cls.pidfile = conf.get('pmpd', 'pidfile')
         cls.logfile = conf.get('pmpd', 'logfile')
+        cls.host = conf.get('pmpd', 'host')
+        cls.port = conf.getint('pmpd', 'port')
 
     @classmethod
     def generate_config(cls):
         c = open(cls.configfile, 'w')
         conf['pmpd'] = {'wavesdir': os.path.join(cls.localdir, 'waves/'),
                         'pidfile': '/tmp/pmpd.pid',
-                        'logfile': '/tmp/pmpd.log'}
+                        'logfile': '/tmp/pmpd.log',
+                        'host':    'localhost',
+                        'port':    6601}
         conf.write(c)
         c.close()
         print("created config:", cls.configfile, file=sys.stderr)
