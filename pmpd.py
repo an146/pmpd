@@ -10,7 +10,7 @@ import wave
 GObject.threads_init()
 
 def usage():
-    print("usage: {0} start|stop|restart".format(sys.argv[0]))
+    print("usage: {0} [-C config] start|stop|restart|(run wavedesc)".format(sys.argv[0]))
     sys.exit(2)
 
 def log_exceptions(ret):
@@ -103,10 +103,15 @@ class Pmpd(Daemon):
 
 def main():
     configfile = None
-    opts, args = getopt.getopt(sys.argv[1:], 'C:')
+    opts, args = getopt.getopt(sys.argv[1:], 'C:h', ['help'])
     for opt, val in opts:
-        if opt == 'C':
+        if opt == '-C':
             configfile = val
+        elif opt in ['-h', '--help']:
+            usage()
+        else:
+            print("unknown option:", opt, file=sys.stderr)
+            usage()
     config.read(configfile)
     wave.check_wavesdir()
 
