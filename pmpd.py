@@ -18,6 +18,9 @@ def log_exceptions(ret):
         def new_f(*args, **kwargs):
             try:
                 return f(*args, **kwargs)
+            except KeyboardInterrupt:
+                log.error('<<<Interrupted>>>', exc_info=True)
+                sys.exit(130)
             except:
                 log.error('<<<Traceback>>>', exc_info=True)
                 return ret
@@ -30,7 +33,7 @@ class Pmpd(Daemon):
         self.wavedesc = None
         super().__init__(pidfile = config.pidfile)
 
-    @log_exceptions(True)
+    @log_exceptions(None)
     def run(self, background):
         loglevel = log.INFO
         if background:
@@ -48,12 +51,6 @@ class Pmpd(Daemon):
         self.mainloop = GObject.MainLoop()
         context = self.mainloop.get_context()
         self.mainloop.run()
-        return
-        while True:
-            try:
-                context.iteration(True)
-            except:
-                log.error('Traceback', exc_info=True)
 
     def run_wave(self, wavedesc):
         self.wavedesc = wavedesc
@@ -91,7 +88,7 @@ class Pmpd(Daemon):
                 if l == '':
                     break
                 l = l.strip()
-                log.info('cmd: %s', l)
+                self.exec_command(l)
             cond &= ~GObject.IO_IN
         if cond & GObject.IO_HUP:
             log.info('cmdin_hup: %s', cmdin)
@@ -100,6 +97,9 @@ class Pmpd(Daemon):
         if cond:
             log.info('cmdin_callback: %s %s', cmdin, cond)
         return True
+
+    def exec_command(self, command):
+        log.info('cmd: %s', command)
 
 def main():
     configfile = None
