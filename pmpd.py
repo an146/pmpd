@@ -113,6 +113,9 @@ class Pmpd(Daemon):
         elif argv[0] == 'play':
             self.play(argv[1])
             return 'pending'
+        elif argv == ['stop']:
+            self.player.stop()
+            return 'ok'
         else:
             raise RuntimeError("unknown command", argv)
 
