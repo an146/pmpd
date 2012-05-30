@@ -6,7 +6,7 @@ from config import config
 
 class Wave:
     def play(self, player):
-        pass
+        raise RuntimeError("Wave.play")
 
 class StreamWave(Wave):
     def __init__(self, uri):

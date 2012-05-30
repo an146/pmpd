@@ -23,7 +23,7 @@ class Player:
 
     def stop(self):
         if self.playbin:
-            self.pipeline.set_state(Gst.State.PAUSED)
+            self.pipeline.set_state(Gst.State.NULL)
             self.pipeline.remove(self.playbin)
         self.playbin = None
 

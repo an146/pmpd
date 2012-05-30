@@ -1,2 +1,5 @@
 test:
-	python3 pmpd.py run rad
+	./pmpd.py stop || true
+	./pmpd.py start
+	sleep 1
+	./pmpc.py play rad

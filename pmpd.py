@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 #
 import getopt, os, sys
+import json
 import socket
 import logging as log
 from gi.repository import GObject, Gtk
@@ -48,11 +49,16 @@ class Pmpd(Daemon):
             self.listen_to_file(sys.stdin)
 
         self.player = Player()
-        self.wave = wave.create(self.wavedesc)
-        self.wave.play(self.player)
+        if self.wavedesc != None:
+            self.play(self.wavedesc)
         self.mainloop = GObject.MainLoop()
         context = self.mainloop.get_context()
         self.mainloop.run()
+
+    def play(self, wavedesc):
+        log.info("play %s", wavedesc)
+        self.wave = wave.create(wavedesc)
+        self.wave.play(self.player)
 
     def run_wave(self, wavedesc):
         self.wavedesc = wavedesc
@@ -90,7 +96,7 @@ class Pmpd(Daemon):
                 if l == '':
                     break
                 l = l.strip()
-                self.exec_command(l)
+                self.exec_command(json.loads(l))
             cond &= ~GObject.IO_IN
         if cond & GObject.IO_HUP:
             log.info('cmdin_hup: %s', cmdin)
@@ -100,8 +106,15 @@ class Pmpd(Daemon):
             log.info('cmdin_callback: %s %s', cmdin, cond)
         return True
 
-    def exec_command(self, command):
-        log.info('cmd: %s', command)
+    def exec_command(self, argv):
+        log.info('cmd: %s', argv)
+        if argv == []:
+            return ('error', 'empty_command')
+        elif argv[0] == 'play':
+            self.play(argv[1])
+            return 'pending'
+        else:
+            raise RuntimeError("unknown command", argv)
 
 def main():
     configfile = None
